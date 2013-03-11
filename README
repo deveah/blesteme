@@ -1,0 +1,20 @@
+	
+	blesteme
+	curses-like library intended for use in roguelikes
+	--
+
+	This tiny library is built in order to simplify the work one has to do when
+	working with SDL and SDL_ttf. In other words, it's just a roguelike-
+	specific wrapper. Due to the size of the library, it's intended to be
+	statically-linked. So, if you'll need it in your project, you only need to
+	mention 'blesteme.c' among the input files and link against SDL and SDL_ttf.
+
+	There's an example included, so just
+	$ ./make.sh
+	to compile, and
+	$ ./test
+	to run the example.
+
+	This project is public domain, and has no warranty. Use it at your own risk
+	and feel free to contribute if you feel like it.
+
