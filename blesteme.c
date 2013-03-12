@@ -33,8 +33,8 @@ int bl_initialize(	char* fontFile,
 	if( bl_font == NULL )
 		return -1;
 
-	/*	disable the font hinting; this is just a matter of preference */
-	TTF_SetFontHinting( bl_font, TTF_HINTING_NONE );
+	/*	set the font hinting; this is just a matter of preference */
+	/*	TTF_SetFontHinting( bl_font, TTF_HINTING_NONE ); */
 
 	/*	get glyph metrics;
 		assuming that a monospace font is loaded, get the metrics of an
@@ -71,6 +71,7 @@ int bl_write( int x, int y, char* string )
 	SDL_Color fg, bg;
 	SDL_Surface *renderedText;
 	SDL_Rect destRect;
+	int i;
 
 	if( !bl_initialized )
 		return -1;
@@ -81,14 +82,27 @@ int bl_write( int x, int y, char* string )
 	/*	you don't want to do that */
 	if( string == NULL )
 		return -1;
-	
-	renderedText = TTF_RenderUTF8_Shaded( bl_font, string, fg, bg );
-	
-	destRect.x = x * bl_charWidth + ( bl_deltax*x );
-	destRect.y = y * bl_charHeight;
-	SDL_BlitSurface( renderedText, NULL, bl_screen, &destRect );
 
-	SDL_FreeSurface( renderedText );
+	/* TODO breaks UTF8-compliance */
+	for( i = 0; i < strlen( string ); i++ )
+	{
+		char s[2];
+		s[0] = string[i];
+		s[1] = 0;
+
+		renderedText = TTF_RenderUTF8_Blended( bl_font, s, fg );
+	
+		destRect.x = (x+i) * bl_charWidth + ( bl_deltax*(x+i) );
+		destRect.y = y * bl_charHeight;
+		destRect.w = bl_charWidth;
+		destRect.h = bl_charHeight;
+
+		SDL_FillRect( bl_screen, &destRect, SDL_MapRGB( bl_screen->format,
+			bg.r, bg.g, bg.b ) );
+		SDL_BlitSurface( renderedText, NULL, bl_screen, &destRect );
+
+		SDL_FreeSurface( renderedText );
+	}
 
 	return 0;
 }
