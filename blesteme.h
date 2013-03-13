@@ -19,6 +19,8 @@
 #ifndef _BLESTEME_H_
 #define _BLESTEME_H_
 
+#define MAX_STRING_LENGTH 1024
+
 typedef struct
 {
 	int key;
@@ -47,11 +49,9 @@ SDL_Surface *bl_screen;
 TTF_Font *bl_font;
 
 /*	initialization procedure for blesteme;
-	most arguments are self-explanatory;
-	deltax specifies a width offset for each char, to avoid visual artifacts
-	that are dependant on the font
+	arguments are self-explanatory
 */
-int bl_initialize( char* fontFile, int fontSize, int cols, int rows, char* windowTitle, int deltax );
+int bl_initialize( char* fontFile, int fontSize, int cols, int rows, char *windowTitle, int deltax );
 
 /*	termination procedure for blesteme;
 	must be called
@@ -59,14 +59,14 @@ int bl_initialize( char* fontFile, int fontSize, int cols, int rows, char* windo
 int bl_terminate( void );
 
 /*	writes a string to the screen at position (x,y);
-	the function expects a UTF8-encoded string (currently broken)
+	the function should expect a UTF8-encoded string (currently broken)
 */
-int bl_write( int x, int y, char* string );
+int bl_printf( int x, int y, char* format, ... );
 
 /*	writes a character to the screen at position (x,y );
 	accepts UTF8-encoded characters
 */
-int bl_putchar( int x, int y, int c );
+int bl_addch( int x, int y, int c );
 
 /*	reads keyboard and mouse input;
 	allows for keys to be keep-pressed;
@@ -76,6 +76,9 @@ int bl_putchar( int x, int y, int c );
 	on no input, it returns -1
 */
 int bl_input( bl_input_t *i );
+
+/*	clear a bl_input_t structure */
+int bl_clear_input( bl_input_t *i );
 
 /*	functions for setting the background and foreground colors;
 	arguments are in 0 ... 255 range

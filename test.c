@@ -9,12 +9,7 @@ int main( void )
 	int c, d;
 	int x, y;
 
-	/* fill the input structure with null data */
-	i.key = -1;
-	i.mod = 0;
-	i.mouse_x = -1;
-	i.mouse_y = -1;
-	i.mouse_btn = 0;
+	bl_clear_input( &i );
 
 	/* call the intialization procedure */
 	bl_initialize( "DejaVuSansMono.ttf", 14, 80, 30, "Blesteme", -1 );
@@ -34,31 +29,28 @@ int main( void )
 		/* set the background and foreground colors */
 		bl_foreground( c, c, c );
 		bl_background( 255-c, 255-c, 255-c );
-		bl_write( 36, 12, "Blesteme" );
-
+		bl_printf( 36, 12, "Blesteme" );
 
 		bl_background( 0, 0, 0 );
 		bl_foreground( 128, 128, 128 );
-		char temp[80];
-		snprintf( temp, 80, "mouse: %i,%i", i.mouse_x, i.mouse_y );
-		bl_write( 0, 0, temp );
+		bl_printf( 0, 0, "mouse: %i, %i", i.mouse_x, i.mouse_y );
 
 		if( i.mouse_btn == SDL_BUTTON_LEFT )
-			bl_write( 0, 1, "left click" );
+			bl_printf( 0, 1, "left click" );
 		if( i.mouse_btn == SDL_BUTTON_RIGHT )
-			bl_write( 0, 1, "right click" );
+			bl_printf( 0, 1, "right click" );
 		if( i.mouse_btn == SDL_BUTTON_MIDDLE )
-			bl_write( 0, 1, "middle click" );
+			bl_printf( 0, 1, "middle click" );
 	
 		if( i.key != -1 )
-			bl_putchar( 0, 2, i.key );
+			bl_addch( 0, 2, i.key );
 
 		if( i.mod & KMOD_SHIFT )
-			bl_write( 0, 3, "shift" );
+			bl_printf( 0, 3, "shift" );
 		if( i.mod & KMOD_ALT )
-			bl_write( 6, 3, "alt" );
+			bl_printf( 6, 3, "alt" );
 		if( i.mod & KMOD_CTRL )
-			bl_write( 10, 3, "ctrl" );
+			bl_printf( 10, 3, "ctrl" );
 
 		bl_refresh();
 

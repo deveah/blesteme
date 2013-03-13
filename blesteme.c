@@ -66,23 +66,29 @@ int bl_terminate( void )
 	return 0;
 }
 
-int bl_write( int x, int y, char* string )
+int bl_printf( int x, int y, char* format, ... )
 {
 	int i;
+	char buf[MAX_STRING_LENGTH];
+	va_list args;
 
-	if( string == NULL )
+	if( format == NULL )
 		return -1;
 
+	va_start( args, format );
+	vsnprintf( buf, MAX_STRING_LENGTH, format, args );
+
 	/* TODO breaks UTF8-compliance */
-	for( i = 0; i < strlen( string ); i++ )
+	for( i = 0; i < strlen( buf ); i++ )
 	{
-		bl_putchar( x+i, y, string[i] );
+		bl_addch( x+i, y, buf[i] );
 	}
 
+	va_end( args );
 	return 0;
 }
 
-int bl_putchar( int x, int y, int c )
+int bl_addch( int x, int y, int c )
 {
 	SDL_Color fg, bg;
 	SDL_Surface *renderedText;
@@ -220,12 +226,12 @@ int bl_input( bl_input_t *i )
 			i->mod = 0;
 			break;
 		case SDL_MOUSEMOTION:
-			i->mouse_x = e.motion.x;
-			i->mouse_y = e.motion.y;
+			i->mouse_x = e.motion.x / ( bl_charWidth + bl_deltax );
+			i->mouse_y = e.motion.y / bl_charHeight;
 			break;
 		case SDL_MOUSEBUTTONDOWN:
-			i->mouse_x = e.button.x;
-			i->mouse_y = e.button.y;
+			i->mouse_x = e.button.x / ( bl_charWidth + bl_deltax );
+			i->mouse_y = e.button.y / bl_charHeight;
 			i->mouse_btn = e.button.button;
 			break;
 		case SDL_MOUSEBUTTONUP:
@@ -243,6 +249,18 @@ int bl_input( bl_input_t *i )
 	else
 		/*	no input */
 		return -1;
+
+	return 0;
+}
+
+int bl_clear_input( bl_input_t *i )
+{
+	i->key = -1;
+	i->mod = 0;
+	i->mouse_x = -1;
+	i->mouse_y = -1;
+	i->mouse_btn = 0;
+	i->quit = 0;
 
 	return 0;
 }
