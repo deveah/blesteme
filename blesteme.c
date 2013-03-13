@@ -34,7 +34,7 @@ int bl_initialize(	char* fontFile,
 		return -1;
 
 	/*	set the font hinting; this is just a matter of preference */
-	/*	TTF_SetFontHinting( bl_font, TTF_HINTING_NONE ); */
+	TTF_SetFontHinting( bl_font, TTF_HINTING_NORMAL );
 
 	/*	get glyph metrics;
 		assuming that a monospace font is loaded, get the metrics of an
@@ -68,41 +68,57 @@ int bl_terminate( void )
 
 int bl_write( int x, int y, char* string )
 {
-	SDL_Color fg, bg;
-	SDL_Surface *renderedText;
-	SDL_Rect destRect;
 	int i;
 
-	if( !bl_initialized )
-		return -1;
-
-	fg.r = bl_fg[0]*255.0f; fg.g = bl_fg[1]*255.0f; fg.b = bl_fg[2]*255.0f;
-	bg.r = bl_bg[0]*255.0f; bg.g = bl_bg[1]*255.0f; bg.b = bl_bg[2]*255.0f;
-
-	/*	you don't want to do that */
 	if( string == NULL )
 		return -1;
 
 	/* TODO breaks UTF8-compliance */
 	for( i = 0; i < strlen( string ); i++ )
 	{
-		char s[2];
-		s[0] = string[i];
-		s[1] = 0;
-
-		renderedText = TTF_RenderUTF8_Blended( bl_font, s, fg );
-	
-		destRect.x = (x+i) * bl_charWidth + ( bl_deltax*(x+i) );
-		destRect.y = y * bl_charHeight;
-		destRect.w = bl_charWidth;
-		destRect.h = bl_charHeight;
-
-		SDL_FillRect( bl_screen, &destRect, SDL_MapRGB( bl_screen->format,
-			bg.r, bg.g, bg.b ) );
-		SDL_BlitSurface( renderedText, NULL, bl_screen, &destRect );
-
-		SDL_FreeSurface( renderedText );
+		bl_putchar( x+i, y, string[i] );
 	}
+
+	return 0;
+}
+
+int bl_putchar( int x, int y, int c )
+{
+	SDL_Color fg, bg;
+	SDL_Surface *renderedText;
+	SDL_Rect destRect;
+
+	if( !bl_initialized )
+		return -1;
+
+	fg.r = bl_fg[0]; fg.g = bl_fg[1]; fg.b = bl_fg[2];
+	bg.r = bl_bg[0]; bg.g = bl_bg[1]; bg.b = bl_bg[2];
+
+	unsigned char s[5];
+	s[0] = ( c & 0xFF000000 ) >> 24;
+	s[1] = ( c & 0x00FF0000 ) >> 16;
+	s[2] = ( c & 0x0000FF00 ) >>  8;
+	s[3] = ( c & 0x000000FF );
+	s[4] = 0;
+
+	int sp = 0;
+	if( s[0] == 0 ) sp++;
+	if( s[1] == 0 ) sp++;
+	if( s[2] == 0 ) sp++;
+	if( s[3] == 0 ) ;
+
+	renderedText = TTF_RenderUTF8_Blended( bl_font, s+sp, fg );
+	
+	destRect.x = x * bl_charWidth + ( bl_deltax * x );
+	destRect.y = y * bl_charHeight;
+	destRect.w = bl_charWidth;
+	destRect.h = bl_charHeight;
+
+	SDL_FillRect( bl_screen, &destRect, SDL_MapRGB( bl_screen->format,
+		bg.r, bg.g, bg.b ) );
+	SDL_BlitSurface( renderedText, NULL, bl_screen, &destRect );
+
+	SDL_FreeSurface( renderedText );
 
 	return 0;
 }
@@ -127,17 +143,17 @@ int bl_delay( int ms )
 	return 0;
 }
 
-int bl_background( float r, float g, float b )
+int bl_background( int r, int g, int b )
 {
 	if( !bl_initialized )
 		return -1;
 
-	if( r > 1.0f ) r = 1.0f;
-	if( r < 0.0f ) r = 0.0f;
-	if( g > 1.0f ) g = 1.0f;
-	if( g < 0.0f ) g = 0.0f;
-	if( b > 1.0f ) b = 1.0f;
-	if( b < 0.0f ) b = 0.0f;
+	if( r > 255 ) r = 255;
+	if( r <   0 ) r =   0;
+	if( g > 255 ) g = 255;
+	if( g <   0 ) g =   0;
+	if( b > 255 ) b = 255;
+	if( b <   0 ) b =   0;
 
 	bl_bg[0] = r;
 	bl_bg[1] = g;
@@ -146,18 +162,18 @@ int bl_background( float r, float g, float b )
 	return 0;
 }
 
-int bl_foreground( float r, float g, float b )
+int bl_foreground( int r, int g, int b )
 {
 	if( !bl_initialized )
 		return -1;
 
-	if( r > 1.0f ) r = 1.0f;
-	if( r < 0.0f ) r = 0.0f;
-	if( g > 1.0f ) g = 1.0f;
-	if( g < 0.0f ) g = 0.0f;
-	if( b > 1.0f ) b = 1.0f;
-	if( b < 0.0f ) b = 0.0f;
-
+	if( r > 255 ) r = 255;
+	if( r <   0 ) r =   0;
+	if( g > 255 ) g = 255;
+	if( g <   0 ) g =   0;
+	if( b > 255 ) b = 255;
+	if( b <   0 ) b =   0;
+	
 	bl_fg[0] = r;
 	bl_fg[1] = g;
 	bl_fg[2] = b;
@@ -172,7 +188,7 @@ int bl_clear( void )
 	if( !bl_initialized )
 		return -1;
 
-	color = SDL_MapRGB( bl_screen->format, bl_bg[0]*255.0f, bl_bg[1]*255.0f, bl_bg[2]*255.0f );
+	color = SDL_MapRGB( bl_screen->format, bl_bg[0], bl_bg[1], bl_bg[2] );
 
 	SDL_FillRect( bl_screen, NULL, color );
 
@@ -186,15 +202,43 @@ int bl_input( bl_input_t *i )
 	if( !bl_initialized )
 		return -1;
 
+	/* this is quite important */
+	i->quit = 0;
+
+	/* this is independent of the type of event */
+	i->mod = SDL_GetModState();
+
 	if( SDL_PollEvent( &e ) )
 	{
-		if( e.type == SDL_KEYDOWN )
+		switch( e.type )
 		{
+		case SDL_KEYDOWN:
 			i->key = e.key.keysym.sym;
-			i->mod = e.key.keysym.mod;
-		}
-		else
+			break;
+		case SDL_KEYUP:
+			i->key = -1;
+			i->mod = 0;
+			break;
+		case SDL_MOUSEMOTION:
+			i->mouse_x = e.motion.x;
+			i->mouse_y = e.motion.y;
+			break;
+		case SDL_MOUSEBUTTONDOWN:
+			i->mouse_x = e.button.x;
+			i->mouse_y = e.button.y;
+			i->mouse_btn = e.button.button;
+			break;
+		case SDL_MOUSEBUTTONUP:
+			i->mouse_x = e.button.x;
+			i->mouse_y = e.button.y;
+			i->mouse_btn = -1;
+			break;
+		case SDL_QUIT:
+			i->quit = 1;
+			break;
+		default:
 			return -1;
+		}
 	}
 	else
 		/*	no input */

@@ -23,6 +23,10 @@ typedef struct
 {
 	int key;
 	int mod;
+	int mouse_x;
+	int mouse_y;
+	int mouse_btn;
+	int quit;
 } bl_input_t;
 
 extern int bl_initialized;
@@ -55,22 +59,29 @@ int bl_initialize( char* fontFile, int fontSize, int cols, int rows, char* windo
 int bl_terminate( void );
 
 /*	writes a string to the screen at position (x,y);
-	the function expects a UTF8-encoded string
+	the function expects a UTF8-encoded string (currently broken)
 */
 int bl_write( int x, int y, char* string );
 
-/*	reads from the keyboard;
-	if a key is pressed, it will fill the bl_input_t structure pointed to with
-	the corresponding data;
-	if no key is being pressed at the time of being called, it returns -1.
+/*	writes a character to the screen at position (x,y );
+	accepts UTF8-encoded characters
+*/
+int bl_putchar( int x, int y, int c );
+
+/*	reads keyboard and mouse input;
+	allows for keys to be keep-pressed;
+	returns modifiers - alt, ctrl, shift;
+	if there is no key pressed, then 'key' is -1;
+	it also returns whether the user sent a quit signal ('quit'=1)
+	on no input, it returns -1
 */
 int bl_input( bl_input_t *i );
 
 /*	functions for setting the background and foreground colors;
-	arguments are in 0 ... 1 range
+	arguments are in 0 ... 255 range
 */
-int bl_background( float r, float g, float b );
-int bl_foreground( float r, float g, float b );
+int bl_background( int r, int g, int b );
+int bl_foreground( int r, int g, int b );
 
 /*	clears the screen, filling it with the current background color */
 int bl_clear( void );
