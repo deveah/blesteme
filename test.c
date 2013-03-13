@@ -23,7 +23,7 @@ int main( void )
 	d = 4;
 
 	/*	run as long as the user doesn't press escape OR
-		close the window / send an exit signal*/
+		close the window / send an exit signal */
 	while(	( i.key != SDLK_ESCAPE ) &&
 			( i.quit != 1 ) )
 	{
